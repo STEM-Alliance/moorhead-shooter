@@ -42,20 +42,27 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    shooterController.pov(0).debounce(0.05).onTrue(new InstantCommand(() -> {
-      shooterSubsystem.setShooterRPM(shooterSubsystem.getShooterRPM() + 500);
+    shooterController.pov(0).onTrue(new InstantCommand(() -> {
+      shooterSubsystem.setShooterRPM(shooterSubsystem.getTargetShooterRPM() + 500);
     }));
 
-    shooterController.pov(90).debounce(0.05).onTrue(new InstantCommand(() -> {
-      shooterSubsystem.setShooterRPM(shooterSubsystem.getShooterRPM() + 100);
+    shooterController.pov(90).onTrue(new InstantCommand(() -> {
+      shooterSubsystem.setShooterRPM(shooterSubsystem.getTargetShooterRPM() + 100);
     }));
 
-    shooterController.pov(180).debounce(0.05).onTrue(new InstantCommand(() -> {
-      shooterSubsystem.setShooterRPM(shooterSubsystem.getShooterRPM() - 500);
+    shooterController.pov(180).onTrue(new InstantCommand(() -> {
+      shooterSubsystem.setShooterRPM(shooterSubsystem.getTargetShooterRPM() - 500);
     }));
 
-    shooterController.pov(270).debounce(0.05).onTrue(new InstantCommand(() -> {
-      shooterSubsystem.setShooterRPM(shooterSubsystem.getShooterRPM() - 100);
+    shooterController.pov(270).onTrue(new InstantCommand(() -> {
+      shooterSubsystem.setShooterRPM(shooterSubsystem.getTargetShooterRPM() - 100);
+    }));
+
+    shooterController.y().onTrue(new InstantCommand(() -> {
+      shooterSubsystem.setTargetHoodAngle(shooterSubsystem.getTargetHoodAngle() + 5);
+    }));
+     shooterController.a().onTrue(new InstantCommand(() -> {
+      shooterSubsystem.setTargetHoodAngle(shooterSubsystem.getTargetHoodAngle() - 5);
     }));
   }
 

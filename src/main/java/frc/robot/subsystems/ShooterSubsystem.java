@@ -17,7 +17,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.NetworkTableValue;
 import edu.wpi.first.wpilibj.RobotBase;
-import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.ShooterConstants;
 
@@ -46,11 +45,11 @@ public class ShooterSubsystem extends SubsystemBase {
 
         SparkFlexConfig shooterFollowerConfig = new SparkFlexConfig();
         shooterFollowerConfig.idleMode(IdleMode.kCoast).inverted(ShooterConstants.SHOOTER_FOLLOWER_INVERTED)
-                .follow(ShooterConstants.SHOOTER_LEADER_PORT);
+                .follow(ShooterConstants.SHOOTER_LEADER_PORT, ShooterConstants.SHOOTER_FOLLOWER_INVERTED);
 
         SparkMaxConfig hoodConfig = new SparkMaxConfig();
         hoodConfig.idleMode(IdleMode.kBrake).inverted(ShooterConstants.HOOD_INVERTED);
-        hoodConfig.absoluteEncoder.positionConversionFactor(ShooterConstants.HOOD_GEAR_RATIO);
+        hoodConfig.encoder.positionConversionFactor(ShooterConstants.HOOD_GEAR_RATIO);
 
 
         // Configure motors
@@ -61,6 +60,8 @@ public class ShooterSubsystem extends SubsystemBase {
         shooterClosedLoop = shooterLeader.getClosedLoopController();
 
         hoodMotor = new SparkMax(ShooterConstants.HOOD_MOTOR_PORT, MotorType.kBrushless);
+
+        hoodMotor.configure(hoodConfig, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
     }
 
     @Override
@@ -68,24 +69,36 @@ public class ShooterSubsystem extends SubsystemBase {
 
         nt.putValue("target_hood_angle", NetworkTableValue.makeDouble(targetHoodAngle));
         nt.putValue("target_shooter_rpm", NetworkTableValue.makeDouble(targetRPM));
-        nt.putValue("hood_angle", NetworkTableValue.makeDouble(shooterLeader.getEncoder().getVelocity()));
-        nt.putValue("shooter_rpm", NetworkTableValue.makeDouble(getHoodAngle()));
+        nt.putValue("hood_angle", NetworkTableValue.makeDouble(getHoodAngle()));
+        nt.putValue("shooter_rpm", NetworkTableValue.makeDouble(shooterLeader.getEncoder().getVelocity()));
+        nt.putValue("leader_temperature", NetworkTableValue.makeDouble(shooterLeader.getMotorTemperature()));
+        nt.putValue("leader_temperature", NetworkTableValue.makeDouble(shooterFollower.getMotorTemperature()));
 
 
         targetHoodAngle = MathUtil.clamp(targetHoodAngle, ShooterConstants.HOOD_MIN_ANGLE, ShooterConstants.HOOD_MAX_ANGLE);
 
         shooterClosedLoop.setSetpoint(targetRPM, ControlType.kVelocity);
-        ShooterConstants.HOOD_PID.calculate(targetHoodAngle, getHoodAngle());
-        
+        double hoodOutput = -ShooterConstants.HOOD_PID.calculate(targetHoodAngle, getHoodAngle());
+        hoodMotor.set(hoodOutput);
+        nt.putValue("hood_output", NetworkTableValue.makeDouble(hoodOutput));
 
     }
-
+    public void setTargetHoodAngle(double target) {
+        targetHoodAngle = target;
+    }
+    public double getTargetHoodAngle() {
+        return targetHoodAngle;
+    }
     public double getHoodAngle() {
-        return Units.rotationsToDegrees(hoodMotor.getAbsoluteEncoder().getPosition());
+        return Units.rotationsToDegrees(hoodMotor.getEncoder().getPosition());
     }
 
     public void setShooterRPM(double rpm) {
         targetRPM = MathUtil.clamp(rpm, 0.0, ShooterConstants.SHOOTER_MAX_RPM);
+    }
+
+    public double getTargetShooterRPM() {
+        return targetRPM;
     }
 
     public double getShooterRPM() {

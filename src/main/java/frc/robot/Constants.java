@@ -30,14 +30,14 @@ public final class Constants {
     public static final double SHOOTER_MAX_RPM = 6500.0;
 
     public static final double HOOD_GEAR_RATIO = (12d / 48d) * (18d / 310d);
-    public static final double HOOD_MIN_ANGLE = 32.982;
-    public static final double HOOD_MAX_ANGLE = 72.982;
+    public static final double HOOD_MIN_ANGLE = 0;
+    public static final double HOOD_MAX_ANGLE = 32.982;
 
-    public static final double SHOOTER_P = 0.005;
+    public static final double SHOOTER_P = 0.0012;
     public static final double SHOOTER_I = 0.000;
-    public static final double SHOOTER_D = 0.000;
+    public static final double SHOOTER_D = 0.0000;
 
-    public static final PIDController HOOD_PID = new PIDController(0.0, 0.0, 0.0);
+    public static final PIDController HOOD_PID = new PIDController(0.0165, 0.0, 0.0001);
     
 
   }
